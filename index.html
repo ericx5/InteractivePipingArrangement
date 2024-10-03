@@ -101,14 +101,7 @@ function checkOnlyOne(element) {
     </ul>
 </div> 
 <script src="GunnerusData.js" type="module"></script>
-<script src="GunnerusConnection.js" type="module"></script>
-<!--script type='text/javascript' src='lib/jquery-1.7.1.min.js'></!--script-->
-<script type='text/javascript' src='lib/Three.js'></script>
-<script type='text/javascript' src='lib/helpers.js' ></script>
-<script type='text/javascript' src='lib/node.js' ></script>
-<script type='text/javascript' src='lib/graph.js'></script>
-<script type='text/javascript' src='lib/astar.js'></script>
-<script type='text/javascript' src='lib/app.js' ></script>
+<script src="GunnerusConnection.js" type = "module"></script>
 <script type="module">
 
 import * as THREE from "./three.module.js";
@@ -339,8 +332,9 @@ var gridSpace = 10;
 for (let i=0; i<startBlocks.length; i++)
 {
     //app.js에서 export된 function runPipes을 실행
-    var result = runPipes(startBlocks[i].target.position.x * gridSpace, startBlocks[i].target.position.y * gridSpace, startBlocks[i].target.position.z * gridSpace, endBlocks[i].target.position.x * gridSpace, endBlocks[i].target.position.y * gridSpace, endBlocks[i].target.position.z * gridSpace);
+    var result = 0; //runPipes(startBlocks[i].target.position.x * gridSpace, startBlocks[i].target.position.y * gridSpace, startBlocks[i].target.position.z * gridSpace, endBlocks[i].target.position.x * gridSpace, endBlocks[i].target.position.y * gridSpace, endBlocks[i].target.position.z * gridSpace);
 
+    /*
   for (let j=0; j<result.path.length-1; j++)
   {
     
@@ -385,6 +379,7 @@ for (let i=0; i<startBlocks.length; i++)
     cylinder_z.position.y = result.path[j].y;
     cylinder_z.position.z = (result.path[j].z + result.path[j+1].z)/2;
   }
+  */
   }
 }
 
