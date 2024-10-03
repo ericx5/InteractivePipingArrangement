@@ -14,6 +14,7 @@ var JSON_Data = {
             "max_y":4.8,
             "min_z":0,
             "max_z":6.687,
+            "color":"green",
         },
         "Engine Room": {
             "length":'',
@@ -28,6 +29,7 @@ var JSON_Data = {
             "max_y":4.8,
             "min_z":0,
             "max_z":4.287,
+            "color":"gray",
         },
         "Cargo Hold": {
             "length":'',
@@ -41,7 +43,8 @@ var JSON_Data = {
             "min_y":-3.1,
             "max_y":3.1,
             "min_z": 2.613,
-            "max_z": 4.287
+            "max_z": 4.287,
+            "color":"brown",
         },
         "Control Room": {
             "length":'',
@@ -55,7 +58,8 @@ var JSON_Data = {
             "min_y": -2.6,
             "max_y": 4.8,
             "min_z": 2.613,
-            "max_z": 4.287
+            "max_z": 4.287,
+            "color":"aquamarine",
         },
         "Conference Room": {
             "length":'',
@@ -69,7 +73,8 @@ var JSON_Data = {
             "min_y": -3.1,
             "max_y": 3.1,
             "min_z": 2.613,
-            "max_z": 4.287
+            "max_z": 4.287,
+            "color":"aquamarine",
         },
         "Cabins": {
             "length":'',
@@ -83,7 +88,8 @@ var JSON_Data = {
             "min_y": -4.8,
             "max_y": 4.8,
             "min_z": 1.636,
-            "max_z": 2.613
+            "max_z": 2.613,
+            "color":"aquamarine",
         },
         "Fuel Oil Tank 1": {
             "length":'',
@@ -97,7 +103,8 @@ var JSON_Data = {
             "min_y": -4.1,
             "max_y": 4.1,
             "min_z": 0,
-            "max_z": 1.6365
+            "max_z": 1.6365,
+            "color":"black",
         },
         "Fuel Oil Tank 2": {
             "length":'',
@@ -112,6 +119,7 @@ var JSON_Data = {
             "max_y":3.1,
             "min_z":0,
             "max_z":1.6365,
+            "color":"black",
         },
         "Optional new DO tank": {
             "length":'',
@@ -125,7 +133,8 @@ var JSON_Data = {
             "min_y": -1,
             "max_y": 1,
             "min_z": 0,
-            "max_z": 1.6365
+            "max_z": 1.6365,
+            "color":"lightcoral",
         },
         "Fresh Water": {
             "length":'',
@@ -139,7 +148,8 @@ var JSON_Data = {
             "min_y": -1,
             "max_y": 1,
             "min_z": 0,
-            "max_z": 1.6365
+            "max_z": 1.6365,
+            "color":"blue",
         },
         "Dry Tank": {
             "length":'',
@@ -153,7 +163,8 @@ var JSON_Data = {
             "min_y": -4.8,
             "max_y": 4.8,
             "min_z": 0,
-            "max_z": 1.636
+            "max_z": 1.636,
+            "color":"grey",
         },
         "Water Ballast": {
             "length":'',
@@ -167,7 +178,8 @@ var JSON_Data = {
             "min_y": -3.1,
             "max_y": 3.1,
             "min_z": 0,
-            "max_z": 1.6365
+            "max_z": 1.6365,
+            "color":"skyblue",
         }
         ,
         "Accomodation 1": {
@@ -182,7 +194,8 @@ var JSON_Data = {
             "min_y": -3.1,
             "max_y": 3.1,
             "min_z": 1.636,
-            "max_z": 2.613
+            "max_z": 2.613,
+            "color":"red",
         },
         "Accomodation 2": {
             "length":'',
@@ -196,7 +209,8 @@ var JSON_Data = {
             "min_y": -3.1,
             "max_y": 3.1,
             "min_z": 2.613,
-            "max_z": 3.6
+            "max_z": 3.6,
+            "color":"red",
         },
         "Ventilation Electronics": {
             "length":'',
@@ -210,7 +224,8 @@ var JSON_Data = {
             "min_y": -3.1,
             "max_y": 3.1,
             "min_z": 2.613,
-            "max_z": 3.6
+            "max_z": 3.6,
+            "color":"yellow",
         }
     },
     "structure": {

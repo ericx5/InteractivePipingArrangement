@@ -32,8 +32,6 @@
         
 </script>
 <script>
-  
-
 function checkOnlyOne(element) {
   
   const checkboxes 
@@ -76,6 +74,8 @@ function checkOnlyOne(element) {
          onclick='checkOnlyOne(this)'/> Greedy
   <br />
   <br />
+  
+</div>
   <h2>About </h2>
   <div style="width: 100%; overflow: hidden;">
   <div style="width: 50%; float: left;"> 
@@ -99,7 +99,6 @@ function checkOnlyOne(element) {
     <li>Click and drag a block to change its position and update its location used information and matches.</li>
     <li>Connections between blocks are designed to be centroid-to-center connections. If we get information about the connection, we will update it to route the pipe to connect to the nozzle of the block or equipment. </li>
     </ul>
-  </div>
 </div> 
 <script src="GunnerusData.js" type="module"></script>
 <script src="GunnerusConnection.js" type="module"></script>
@@ -150,7 +149,7 @@ function MakeBoxByBlocks(startBlocks, endBlocks,scene)
     var target = startBlocks[i].target;
       //create start block
       var geometry_cube = new THREE.BoxGeometry( target.max_x - target.min_x, target.max_y - target.min_y, target.max_z - target.min_z );
-      var material = new THREE.MeshBasicMaterial( { color: "coral", 
+      var material = new THREE.MeshBasicMaterial( { color: target.color, 
       opacity: 0.5, transparent: true} );
       var cube = new THREE.Mesh( geometry_cube, material );
       
@@ -163,7 +162,7 @@ function MakeBoxByBlocks(startBlocks, endBlocks,scene)
 
       target = endBlocks[i].target;  
       var geometry_cube2 = new THREE.BoxGeometry( target.max_x - target.min_x, target.max_y - target.min_y, target.max_z - target.min_z );
-      var material_c2 = new THREE.MeshBasicMaterial( { color: "red", opacity: 0.5, transparent: true} );
+      var material_c2 = new THREE.MeshBasicMaterial( {color: target.color,  opacity: 0.5, transparent: true} );
       var cube2 = new THREE.Mesh( geometry_cube2, material_c2 );
 
         //set position of the block
@@ -192,7 +191,7 @@ function FindSeries(connections, arrangements, diaLists, scene)
       
       //create start block
       var geometry_cube = new THREE.BoxGeometry( target.max_x - target.min_x, target.max_y - target.min_y, target.max_z - target.min_z );
-      var material = new THREE.MeshBasicMaterial( { color: "coral", 
+      var material = new THREE.MeshBasicMaterial( { color: target.color, 
       opacity: 0.5, transparent: true} );
       var cube = new THREE.Mesh( geometry_cube, material );
       
@@ -216,7 +215,7 @@ function FindSeries(connections, arrangements, diaLists, scene)
     }
     
     var geometry_cube2 = new THREE.BoxGeometry( target.max_x - target.min_x, target.max_y - target.min_y, target.max_z - target.min_z );
-    var material_c2 = new THREE.MeshBasicMaterial( { color: "red", opacity: 0.5, transparent: true} );
+    var material_c2 = new THREE.MeshBasicMaterial( { color: target.color, opacity: 0.5, transparent: true} );
     var cube2 = new THREE.Mesh( geometry_cube2, material_c2 );
 
       //set position of the block
@@ -233,8 +232,7 @@ function FindSeries(connections, arrangements, diaLists, scene)
   return [startPoints, endPoints, diaLists];
 }
 
-{
-//creating cylinder between objects
+{//creating cylinder between objects
 for (let i=0; i<startPoints.length; i++)
   {
     var geometry_cy = new THREE.CylinderGeometry( diaLists[i]/1000, diaLists[i]/1000, Math.abs(startPoints[i].x-endPoints[i].x), 32 );
