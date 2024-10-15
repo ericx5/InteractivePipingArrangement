@@ -228,55 +228,54 @@ for (let i=0; i<startBlocks.length; i++)
 {
     //app.js에서 export된 function runPipes을 실행
     var pipeRouting = new PipeRouting();
-    var result = pipeRouting.RapidPipeRoutingStart(arrangements, startBlocks[i].target.position, endBlocks[i].target.position);
-    var result = 0; //runPipes(startBlocks[i].target.position.x * gridSpace, startBlocks[i].target.position.y * gridSpace, startBlocks[i].target.position.z * gridSpace, endBlocks[i].target.position.x * gridSpace, endBlocks[i].target.position.y * gridSpace, endBlocks[i].target.position.z * gridSpace);
+    var value = pipeRouting.RapidPipeRoutingStart(arrangements, startBlocks[i].target.position, endBlocks[i].target.position);
 
-    /*
-  for (let j=0; j<result.path.length-1; j++)
-  {
-    
-    var geometry_cy = new THREE.CylinderGeometry( diaLists[i]/1000, diaLists[i]/1000, Math.abs(result.path[j].x-result.path[j+1].x), 32 );
-    var material_cy = new THREE.MeshBasicMaterial( { color: "blue" } );
-    var cylinder_x = new THREE.Mesh( geometry_cy, material_cy ); 
+    //get (x,y,z) from result
+    value.then((result)=>{
+    for (let j=0; j<result.length-1; j++)
+    {
+      var geometry_cy = new THREE.CylinderGeometry( diaLists[i]/1000, diaLists[i]/1000, Math.abs(result[j].x-result[j+1].x), 32 );
+      var material_cy = new THREE.MeshBasicMaterial( { color: "blue" } );
+      var cylinder_x = new THREE.Mesh( geometry_cy, material_cy ); 
 
-    //Adding objects to scene
-    scene.add( cylinder_x );
-    //Adding objects to array
-    objects.push( cylinder_x );
-    cylinder_x.rotation.z = Math.PI/2
-    cylinder_x.position.x = (result.path[j].x + result.path[j+1].x)/2;
-    cylinder_x.position.y = result.path[j].y;
-    cylinder_x.position.z = result.path[j].z;
+      //Adding objects to scene
+      scene.add( cylinder_x );
+      //Adding objects to array
+      objects.push( cylinder_x );
+      cylinder_x.rotation.z = Math.PI/2
+      cylinder_x.position.x = (result[j].x + result[j+1].x)/2;
+      cylinder_x.position.y = result[j].y;
+      cylinder_x.position.z = result[j].z;
 
-    var geometry_cy = new THREE.CylinderGeometry( diaLists[i]/1000, diaLists[i]/1000,Math.abs(result.path[j].y-result.path[j+1].y), 32 );
-    var material_cy = new THREE.MeshBasicMaterial( { color: "blue" } );
-    var cylinder_y = new THREE.Mesh( geometry_cy, material_cy ); 
+      var geometry_cy = new THREE.CylinderGeometry( diaLists[i]/1000, diaLists[i]/1000,Math.abs(result[j].y-result[j+1].y), 32 );
+      var material_cy = new THREE.MeshBasicMaterial( { color: "blue" } );
+      var cylinder_y = new THREE.Mesh( geometry_cy, material_cy ); 
 
-    //Adding objects to scene
-    scene.add( cylinder_y );
+      //Adding objects to scene
+      scene.add( cylinder_y );
 
-    //Adding objects to array
-    objects.push( cylinder_y );
-    cylinder_y.rotation.y = Math.PI/2
-    cylinder_y.position.x = result.path[j].x
-    cylinder_y.position.y = (result.path[j].y + result.path[j+1].y)/2;
-    cylinder_y.position.z = result.path[j].z;
+      //Adding objects to array
+      objects.push( cylinder_y );
+      cylinder_y.rotation.y = Math.PI/2
+      cylinder_y.position.x = result[j].x
+      cylinder_y.position.y = (result[j].y + result[j+1].y)/2;
+      cylinder_y.position.z = result[j].z;
 
-    var geometry_cy = new THREE.CylinderGeometry( diaLists[i]/1000, diaLists[i]/1000, Math.abs(result.path[j].z-result.path[j+1].z), 32 );
-    var material_cy = new THREE.MeshBasicMaterial( { color: "blue" } );
-    var cylinder_z = new THREE.Mesh( geometry_cy, material_cy ); 
+      var geometry_cy = new THREE.CylinderGeometry( diaLists[i]/1000, diaLists[i]/1000, Math.abs(result[j].z-result[j+1].z), 32 );
+      var material_cy = new THREE.MeshBasicMaterial( { color: "blue" } );
+      var cylinder_z = new THREE.Mesh( geometry_cy, material_cy ); 
 
-    //Adding objects to scene
-    scene.add( cylinder_z );
-    //Adding objects to array
-    objects.push( cylinder_z );
-    
-    cylinder_z.rotation.x = Math.PI/2
-    cylinder_z.position.x = result.path[j].x
-    cylinder_z.position.y = result.path[j].y;
-    cylinder_z.position.z = (result.path[j].z + result.path[j+1].z)/2;
-  }
-  */
+      //Adding objects to scene
+      scene.add( cylinder_z );
+      //Adding objects to array
+      objects.push( cylinder_z );
+      
+      cylinder_z.rotation.x = Math.PI/2
+      cylinder_z.position.x = result[j].x
+      cylinder_z.position.y = result[j].y;
+      cylinder_z.position.z = (result[j].z + result[j+1].z)/2;
+    }
+  });
   }
 }
 

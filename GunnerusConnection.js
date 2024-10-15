@@ -6,7 +6,6 @@ var Connection_Data = {
             "diameter": 400
           },
           
-
     {
         "start": "Hull 1",
         "end": "Engine Room",
