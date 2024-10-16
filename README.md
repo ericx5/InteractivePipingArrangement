@@ -1,4 +1,4 @@
-App:
+![image](https://github.com/user-attachments/assets/84efb547-908a-4c25-a15e-7ea469b843b3)
 
 This app is for verifying that the arrangement and pipe routing can be performed in real-time in a web-based environment.
 
