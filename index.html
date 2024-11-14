@@ -32,17 +32,6 @@
         
 </script>
 <script>
-function checkOnlyOne(element) {
-  
-  const checkboxes 
-      = document.getElementsByName('algorithm');
-  
-  checkboxes.forEach((cb) => {
-    cb.checked = false;
-  })
-  
-  element.checked = true;
-};
 </script>
 
 <!--"three/addons/": "https://cdn.jsdelivr.net/npm/three@v0.167.1/examples/jsm/"-->
@@ -51,30 +40,21 @@ function checkOnlyOne(element) {
 </div>
 <body id="body">
   <div id="main" style="width:1000px;border:1px solid grey; padding:20px; font-family:Helvetica, sans-serif; margin: 0 auto;">
-  <h1>Simple Blocks & Pipeline Example with Interaction</h1>
-  <p class="lead" style="text-align: right;">Made by Jisang Ha & Henrique M. Gaspar ~ September 2024</p>
-  <p>This is an example of  blocks and a pipeline that responds to user's drag.</p>
-  <p>This app visualizes the objects based on the information obtained and creates the shortest pipeline connecting the centers of the objects. </p>
-  <p> <strong> By draging, user can rearrange objects' location</strong>, and pipelines connecting objects are recreated in real-time.</p>
+  <h1>Simple GA Creater</h1>
+  <p class="lead" style="text-align: right;">Made by Jisang Ha & Henrique M. Gaspar ~ November 2024</p>
+  <p>This is an example of simple GA (General Arrangement) Creater that responds to user's drag.</p>
+  <p>This app visualizes objects based on the information obtained and creates the GA of the ship. </p>
+  <p> <strong> By draging, user can rearrange objects' location</strong> in real-time.</p>
   <div id="figure" style="width:80%">
-    <input type='checkbox'
-         name='algorithm' 
-         value='A*'
-         checked="checked"
-         onclick='checkOnlyOne(this)'/> A*
   <br />
-  <input type='checkbox' 
-         name='algorithm' 
-         value='Dijkstra' 
-         onclick='checkOnlyOne(this)'/> Dijkstra
-  <br />
-  <input type='checkbox' 
-         name='algorithm' 
-         value='Greedy' 
-         onclick='checkOnlyOne(this)'/> Greedy
-  <br />
-  <br />
-  
+</div>
+<div >
+  <canvas id="the-canvas" style="width:80%"></canvas>
+  <br/>
+  <button id="prev">Previous</button>
+  <button id="next">Next</button>
+  &nbsp; &nbsp;
+  <span>Page: <span id="page_num"></span> / <span id="page_count"></span></span>
 </div>
   <h2>About </h2>
   <div style="width: 100%; overflow: hidden;">
