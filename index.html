@@ -31,8 +31,6 @@
         }
         
 </script>
-<script>
-</script>
 
 <!--"three/addons/": "https://cdn.jsdelivr.net/npm/three@v0.167.1/examples/jsm/"-->
 
@@ -43,9 +41,19 @@
   <h1>Simple GA Creater</h1>
   <p class="lead" style="text-align: right;">Made by Jisang Ha & Henrique M. Gaspar ~ November 2024</p>
   <p>This is an example of simple GA (General Arrangement) Creater that responds to user's drag.</p>
-  <p>This app visualizes objects based on the information obtained and creates the GA of the ship. </p>
+  <p>This app visualizes objects based on the information obtained and creates the shortest pipeline connecting the cneters of objectsof the ship. </p>
   <p> <strong> By draging, user can rearrange objects' location</strong> in real-time.</p>
-  <div id="figure" style="width:80%">
+  <div id ="menus">
+    <div style="margin: 20px 0;">
+      <label style="margin-right: 20px;">
+        <input type="radio" name="case" value="case1" onclick="handleCaseChange(this)"> Simple block
+      </label>
+      <label>
+        <input type="radio" name="case" value="case2" checked onclick="handleCaseChange(this)"> Gunnerus
+      </label>
+    </div>
+  </div>
+  <div id="figure" style="width:50%;">
   <br />
 </div>
 <div >

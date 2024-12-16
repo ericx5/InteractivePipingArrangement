@@ -1,8 +1,9 @@
 import * as THREE from "./three.module.js";
 import { OrbitControls } from './OrbitControls.js';
 import { DragControls } from './DragControls.js';
-import JSON_Data from './GunnerusData.js';
-import Connection_Data from './GunnerusConnection.js';
+import Gunnerus_Data from './data/GunnerusData.js';
+import SimpleBlock_Data from './SimpleBlockData.js';
+import Connection_Data from './data/GunnerusConnection.js';
 import {PipeRouting} from "./lib/PipeRouting.js";
 import * as pdfjsLib from './lib/pdf/pdf.mjs';
 
@@ -11,7 +12,7 @@ var objects = [];
 
 // Read connection data
 var connections = Connection_Data["connections"];
-var arrangements = JSON_Data["arrangements"];
+var arrangements = Gunnerus_Data["arrangements"];
 
 var startPoints =[];
 var endPoints = [];
@@ -31,9 +32,9 @@ class arrangedObject {
 var startBlocks = [];
 var endBlocks = [];
 const deckHeights = [0, 2.613, 4.287];
-BuildDecks(deckHeights);
+buildDecks(deckHeights);
 [startPoints, endPoints, diaLists] = FindSeries(connections, arrangements, diaLists, scene);
-RunPDFViewer();
+runPDFViewer();
 
 //container should be here, but not overwriting the size of the window, to be fixed
 const renderer = new THREE.WebGLRenderer();
@@ -50,6 +51,53 @@ playButton2.onclick = calculationButtonClicked;
 
 //put renderer to "figure" div
 document.getElementById("figure").appendChild( renderer.domElement );
+
+initializeControls();
+
+createMenus();
+
+//revisionData = getRevisionData();
+
+// Call this after creating import/export buttons
+createVersionSliders();
+
+function createMenus()
+{
+  var playButton = document.createElement("button");
+  playButton.innerHTML = "▷ GA Generation";
+  playButton.style.color = "green";
+  playButton.style.fontSize = "15px";
+  document.getElementById("figure").appendChild(playButton);
+  playButton.onclick = gaButtonClicked;
+
+
+  // Add these buttons after your existing buttons
+  var importButton = document.createElement("button");
+  importButton.innerHTML = "Import JSON";
+  importButton.style.cssText = `
+      color: black;
+      font-size: 15px;
+      float: right;
+      margin-left: 10px;
+  `;
+  importButton.onclick = importJSON;
+
+  var exportButton = document.createElement("button");
+  exportButton.innerHTML = "Export JSON";
+  exportButton.style.cssText = `
+      color: black;
+      font-size: 15px;
+      float: right;
+  `;
+  exportButton.onclick = exportJSON;
+
+  document.getElementById("menus").appendChild(importButton);
+  document.getElementById("menus").appendChild(exportButton);
+}
+
+function initializeControls()
+{
+  
 
 
 //Caling Orbit Controls for Mouse
@@ -96,23 +144,15 @@ dragControls.addEventListener( 'dragend', function (event) {
   orbitControls.enabled = true;
 });
 
-
-
-function animate() {
-	renderer.render( scene, camera );
-}
 renderer.setAnimationLoop( animate );
 
 // Call this after scene setup
 addClickEventToObjects();
+}
 
-
-var playButton = document.createElement("button");
-playButton.innerHTML = "▷ GA Generation";
-playButton.style.color = "green";
-playButton.style.fontSize = "15px";
-document.getElementById("figure").appendChild(playButton);
-playButton.onclick = gaButtonClicked;
+function animate() {
+	renderer.render( scene, camera );
+}
 
 function gaButtonClicked() {
   scene.clear();
@@ -126,102 +166,102 @@ function calculationButtonClicked() {
   getDataFromBlocks(startBlocks, endBlocks);
   };
   
-function RunPDFViewer()
-{
-  
-var url = './resources/General-Arrangement.pdf';
+function runPDFViewer()
+  {
+    
+  var url = './resources/General-Arrangement.pdf';
 
-// Loaded via <script> tag, create shortcut to access PDF.js exports.
-pdfjsLib.GlobalWorkerOptions.workerSrc = './lib/pdf/pdf.worker.mjs';
+  // Loaded via <script> tag, create shortcut to access PDF.js exports.
+  pdfjsLib.GlobalWorkerOptions.workerSrc = './lib/pdf/pdf.worker.mjs';
 
-var pdfDoc = null,
-pageNum = 1,
-pageRendering = false,
-pageNumPending = null,
-scale = 0.8,
-canvas = document.getElementById('the-canvas'),
-ctx = canvas.getContext('2d');
+  var pdfDoc = null,
+  pageNum = 1,
+  pageRendering = false,
+  pageNumPending = null,
+  scale = 0.8,
+  canvas = document.getElementById('the-canvas'),
+  ctx = canvas.getContext('2d');
 
-/**
-* Get page info from document, resize canvas accordingly, and render page.
-* @param num Page number.
-*/
-function renderPage(num) {
-pageRendering = true;
-// Using promise to fetch the page
-pdfDoc.getPage(num).then(function(page) {
-var viewport = page.getViewport({scale: scale});
-canvas.height = viewport.height;
-canvas.width = viewport.width;
+  /**
+  * Get page info from document, resize canvas accordingly, and render page.
+  * @param num Page number.
+  */
+  function renderPage(num) {
+  pageRendering = true;
+  // Using promise to fetch the page
+  pdfDoc.getPage(num).then(function(page) {
+  var viewport = page.getViewport({scale: scale});
+  canvas.height = viewport.height;
+  canvas.width = viewport.width;
 
-// Render PDF page into canvas context
-var renderContext = {
-  canvasContext: ctx,
-  viewport: viewport
-};
-var renderTask = page.render(renderContext);
+  // Render PDF page into canvas context
+  var renderContext = {
+    canvasContext: ctx,
+    viewport: viewport
+  };
+  var renderTask = page.render(renderContext);
 
-// Wait for rendering to finish
-renderTask.promise.then(function() {
-  pageRendering = false;
-  if (pageNumPending !== null) {
-    // New page rendering is pending
-    renderPage(pageNumPending);
-    pageNumPending = null;
+  // Wait for rendering to finish
+  renderTask.promise.then(function() {
+    pageRendering = false;
+    if (pageNumPending !== null) {
+      // New page rendering is pending
+      renderPage(pageNumPending);
+      pageNumPending = null;
+    }
+  });
+  });
+
+  // Update page counters
+  document.getElementById('page_num').textContent = num;
   }
-});
-});
 
-// Update page counters
-document.getElementById('page_num').textContent = num;
-}
+  /**
+  * If another page rendering in progress, waits until the rendering is
+  * finised. Otherwise, executes rendering immediately.
+  */
+  function queueRenderPage(num) {
+  if (pageRendering) {
+  pageNumPending = num;
+  } else {
+  renderPage(num);
+  }
+  }
 
-/**
-* If another page rendering in progress, waits until the rendering is
-* finised. Otherwise, executes rendering immediately.
-*/
-function queueRenderPage(num) {
-if (pageRendering) {
-pageNumPending = num;
-} else {
-renderPage(num);
-}
-}
+  /**
+  * Displays previous page.
+  */
+  function onPrevPage() {
+  if (pageNum <= 1) {
+  return;
+  }
+  pageNum--;
+  queueRenderPage(pageNum);
+  }
+  document.getElementById('prev').addEventListener('click', onPrevPage);
 
-/**
-* Displays previous page.
-*/
-function onPrevPage() {
-if (pageNum <= 1) {
-return;
-}
-pageNum--;
-queueRenderPage(pageNum);
-}
-document.getElementById('prev').addEventListener('click', onPrevPage);
+  /**
+  * Displays next page.
+  */
+  function onNextPage() {
+  if (pageNum >= pdfDoc.numPages) {
+  return;
+  }
+  pageNum++;
+  queueRenderPage(pageNum);
+  }
+  document.getElementById('next').addEventListener('click', onNextPage);
 
-/**
-* Displays next page.
-*/
-function onNextPage() {
-if (pageNum >= pdfDoc.numPages) {
-return;
-}
-pageNum++;
-queueRenderPage(pageNum);
-}
-document.getElementById('next').addEventListener('click', onNextPage);
+  /**
+  * Asynchronously downloads PDF.
+  */
+  pdfjsLib.getDocument(url).promise.then(function(pdfDoc_) {
+  pdfDoc = pdfDoc_;
+  document.getElementById('page_count').textContent = pdfDoc.numPages;
 
-/**
-* Asynchronously downloads PDF.
-*/
-pdfjsLib.getDocument(url).promise.then(function(pdfDoc_) {
-pdfDoc = pdfDoc_;
-document.getElementById('page_count').textContent = pdfDoc.numPages;
-
-// Initial/first page rendering
-renderPage(pageNum);
-});
+  // Initial/first page rendering
+  renderPage(pageNum);
+  });
 }
 
 
@@ -454,7 +494,7 @@ function GridGeometry(width = 1, height = 1, wSeg = 1, hSeg = 1, lExt = [0, 0]){
   
 }
 
-function BuildDecks(deckHeights)
+function buildDecks(deckHeights)
 {
   let deck1 = GridGeometry(30, 10, 10, 10, [0, 1]);
   deck1.rotateX(Math.PI * 1);
@@ -642,3 +682,197 @@ function updateInfoPanel(blockData, panel) {
     // Show panel
     panel.style.display = 'block';
 }
+
+
+// Add this after your import/export buttons
+function createVersionSliders(revisionData) {
+  
+    const slidersContainer = document.createElement('div');
+    slidersContainer.style.cssText = `
+        margin-top: 10px;
+        padding: 10px;
+        background: #f5f5f5;
+        border-radius: 5px;
+    `;
+
+    // This would normally come from scanning your data directory
+    // For now, we'll hardcode the data files we know about
+    const dataFiles = [
+        { name: 'CargoHold', versions: 2 },
+        { name: 'ControlRoom', versions: 2 },
+        { name: 'Accomodation1', versions: 1 }
+    ];
+
+    dataFiles.forEach(file => {
+        const sliderContainer = document.createElement('div');
+        sliderContainer.style.cssText = `
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        `;
+
+        const label = document.createElement('label');
+        label.textContent = `${file.name}: `;
+        label.style.width = '150px';
+
+        const slider = document.createElement('input');
+        slider.type = 'range';
+        slider.min = '0';
+        slider.max = file.versions;
+        slider.value = '0';
+        slider.style.flex = '1';
+
+        const valueDisplay = document.createElement('span');
+        valueDisplay.textContent = slider.value;
+        valueDisplay.style.width = '30px';
+
+        slider.addEventListener('input', function() {
+            valueDisplay.textContent = this.value;
+            handleVersionChange(file.name, this.value);
+        });
+
+        sliderContainer.appendChild(label);
+        sliderContainer.appendChild(slider);
+        sliderContainer.appendChild(valueDisplay);
+        slidersContainer.appendChild(sliderContainer);
+    });
+
+
+    document.getElementById("menus").appendChild(slidersContainer);
+
+    
+}
+
+function handleVersionChange(fileName, version) {
+    // Create the path to the version file
+    const filePath = `./data/versions/${fileName.replace(' ', '_')}_r${version}.json`;
+    
+    // Fetch the new version data
+    fetch(filePath)
+        .then(response => response.json())
+        .then(data => {
+            // Update the relevant data structures based on file type
+            if (data.arrangements) {
+                // Update only the specific component's arrangements
+                Object.keys(data.arrangements).forEach(key => {
+                    arrangements[key] = data.arrangements[key];
+                });
+            }
+            if (data.connections) {
+                // Update connections that involve this component
+                connections = connections.map(conn => {
+                    if (conn.start.includes(fileName) || conn.end.includes(fileName)) {
+                        const newConn = data.connections.find(c => 
+                            c.start === conn.start && c.end === conn.end
+                        );
+                        return newConn || conn;
+                    }
+                    return conn;
+                });
+            }
+
+            // Rebuild the scene with new data
+            scene.clear();
+            objects = [];
+            startBlocks = [];
+            endBlocks = [];
+            startPoints = [];
+            endPoints = [];
+            diaLists = [];
+            
+            buildDecks(deckHeights);
+            [startPoints, endPoints, diaLists] = FindSeries(connections, arrangements, diaLists, scene);
+        })
+        .catch(error => {
+            console.error(`Error loading version ${version} of ${fileName}:`, error);
+            alert(`Failed to load version ${version} of ${fileName}`);
+        });
+}
+
+
+// Add these new functions
+function importJSON() {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.json, .js';
+    
+    input.onchange = function(e) {
+        const file = e.target.files[0];
+        const reader = new FileReader();
+        
+        reader.onload = function(event) {
+            try {
+                const jsonData = JSON.parse(event.target.result);
+                // Update the data structures
+                if (jsonData.arrangements && jsonData.connections) {
+                    arrangements = jsonData.arrangements;
+                    connections = jsonData.connections;
+                    
+                    // Reset and rebuild the scene
+                    scene.clear();
+                    objects = [];
+                    startBlocks = [];
+                    endBlocks = [];
+                    startPoints = [];
+                    endPoints = [];
+                    diaLists = [];
+                    
+                    buildDecks(deckHeights);
+                    [startPoints, endPoints, diaLists] = FindSeries(connections, arrangements, diaLists, scene);
+                }
+            } catch (error) {
+                console.error('Error parsing JSON:', error);
+                alert('Invalid JSON file');
+            }
+        };
+        
+        reader.readAsText(file);
+    };
+    
+    input.click();
+}
+
+function exportJSON() {
+    const exportData = {
+        arrangements: arrangements,
+        connections: connections
+    };
+    
+    const dataStr = JSON.stringify(exportData, null, 2);
+    const blob = new Blob([dataStr], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'pipeline_data.json';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+}
+
+// Export the function to make it globally accessible
+window.caseSelected = function(value) {
+    scene.clear();
+    objects = [];
+    startBlocks = [];
+    endBlocks = [];
+    startPoints = [];
+    endPoints = [];
+    diaLists = [];
+    
+    if (value === "gunnerus") {
+        connections = Connection_Data["connections"];
+        arrangements = Gunnerus_Data["arrangements"];
+    } else {
+        connections = Connection_Data["connections"]; // Update with SimpleBlock connections
+        arrangements = SimpleBlock_Data["arrangements"];
+    }
+    
+    buildDecks(deckHeights);
+    [startPoints, endPoints, diaLists] = FindSeries(connections, arrangements, diaLists, scene);
+    initializeControls();
+};
+
+
