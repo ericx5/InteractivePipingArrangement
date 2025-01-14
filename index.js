@@ -6,6 +6,7 @@ import SimpleBlock_Data from './SimpleBlockData.js';
 import Connection_Data from './data/GunnerusConnection.js';
 import {PipeRouting} from "./lib/PipeRouting.js";
 import * as pdfjsLib from './lib/pdf/pdf.mjs';
+import { STLLoader } from './STLLoader.js'
 
 
 var objects = [];
@@ -60,6 +61,62 @@ createMenus();
 
 // Call this after creating import/export buttons
 createVersionSliders();
+
+input3DModels();
+
+function input3DModels() {
+  const loader = new STLLoader();
+  const modelPath = './3D_models/STL/Gunnerus/';
+  
+  const material = new THREE.MeshPhongMaterial({
+      color: 0x808080,
+      specular: 0x111111,
+      shininess: 200,
+      transparent: true,
+      opacity: 0.7
+  });
+
+  const ambientLight = new THREE.AmbientLight(0x404040);
+  scene.add(ambientLight);
+  
+  const directionalLight = new THREE.DirectionalLight(0xffffff, 0.5);
+  directionalLight.position.set(1, 1, 1);
+  scene.add(directionalLight);
+
+  const modelFiles = ['gunnerus.stl'];
+
+  modelFiles.forEach(filename => {
+      loader.load(
+          modelPath + filename,
+          function (geometry) {
+              const mesh = new THREE.Mesh(geometry, material);
+              
+              // Center the model
+              geometry.computeBoundingBox();
+              const center = geometry.boundingBox.getCenter(new THREE.Vector3());
+              geometry.center();
+              
+              // Rotate 90 degrees around Z axis
+              mesh.rotation.z = - Math.PI / 2;
+              
+              // Move half of model's length in X direction
+              geometry.computeBoundingBox();
+              const length = geometry.boundingBox.max.x - geometry.boundingBox.min.x;
+              mesh.position.x = 2.0 * length;
+              mesh.position.z = 4.287 * 2;
+              
+              scene.add(mesh);
+              objects.push(mesh);
+          },
+          function (xhr) {
+              console.log((xhr.loaded / xhr.total * 100) + '% loaded');
+          },
+          function (error) {
+              console.error('Error loading STL:', error);
+          }
+      );
+  });
+}
 
 function createMenus()
 {
@@ -872,6 +929,7 @@ window.caseSelected = function(value) {
     
     buildDecks(deckHeights);
     [startPoints, endPoints, diaLists] = FindSeries(connections, arrangements, diaLists, scene);
+    input3DModels();
     initializeControls();
 };
 

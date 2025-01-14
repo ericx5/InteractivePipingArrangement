@@ -1,6 +1,7 @@
 var JSON_Data = {
     "arrangements":{
-        "Hull1": {
+        
+        /*"Hull1": {
             "length":"",
             "width":"",
             "height":"",
@@ -14,7 +15,7 @@ var JSON_Data = {
             "min_z":0,
             "max_z":6.687,
             "color":"green",
-        },
+        },*/
         "EngineRoom": {
             "length":"",
             "width":"",
