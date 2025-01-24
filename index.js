@@ -57,12 +57,210 @@ initializeControls();
 
 createMenus();
 
+createGraphView();
+
 //revisionData = getRevisionData();
 
 // Call this after creating import/export buttons
-createVersionSliders();
+//createVersionSliders();
 
 input3DModels();
+
+function createGraphView()
+{
+  // set the dimensions and margins of the graph
+  const width = 800;
+  const height = 800;
+
+  // append the svg object to the body of the page
+  const svg = d3.select("#my_dataviz")
+    .append("svg")
+    .attr("width", width)
+    .attr("height", height)
+    .append("g")
+    .attr("transform", "translate(40,0)");
+
+  // Create hierarchical data structure from Gunnerus data
+  function createHierarchy() {
+    const root = {
+      name: "Gunnerus",
+      children: []
+    };
+
+    // Create main categories based on arrangement types
+    const categories = new Set();
+    Object.keys(arrangements).forEach(key => {
+      const category = key.split('_')[0];
+      categories.add(category);
+    });
+
+    // Create hierarchy structure
+    categories.forEach(category => {
+
+      // Add arrangement nodes
+      const versionFiles = Object.keys(arrangements).filter(key => key.startsWith(category));
+      versionFiles.forEach(file => {
+        const arrangementNode = {
+          name: file,
+          data: arrangements[file],
+          children: []
+        };
+
+        // Define version data for each arrangement
+        const versionData = {
+          'CargoHold': 2,
+          'ControlRoom': 2,
+          'Accomodation1': 1
+        };
+
+        // Add version nodes in a chain
+        if (versionData[file]) {
+          let currentNode = arrangementNode;
+          for (let i = 1; i <= versionData[file]; i++) {
+            const versionNode = {
+              name: `${arrangements[file].Name}_r${i}`,
+              data: arrangements[file],
+              version: i,
+              children: []
+            };
+            
+            currentNode.children = [versionNode];
+            currentNode = versionNode;
+          }
+        }
+
+        root.children.push(arrangementNode);
+      });
+    });
+
+    return root;
+  }
+
+  // Create cluster layout with the hierarchical data
+  const cluster = d3.tree().size([height, width - 100]);
+
+
+  const root = d3.hierarchy(createHierarchy(), d => d.children);
+  cluster(root);
+
+  // Add links between nodes
+  svg.selectAll('path')
+    .data(root.descendants().slice(1))
+    .join('path')
+    .attr("d", function(d) {
+      return "M" + d.y + "," + d.x
+        + "C" + (d.parent.y + 50) + "," + d.x
+        + " " + (d.parent.y + 150) + "," + d.parent.x
+        + " " + d.parent.y + "," + d.parent.x;
+    })
+    .style("fill", 'none')
+    .attr("stroke", '#ccc');
+
+  // Create node groups
+  const nodes = svg.selectAll("g")
+    .data(root.descendants())
+    .join("g")
+    .attr("transform", d => `translate(${d.y},${d.x})`);
+
+  // Add circles to nodes
+  nodes.append("circle")
+    .attr("r", 7)
+    .style("fill", d => {
+      // Change color if version is greater than 0
+      if (d.data.version && d.data.version > 0) {
+        return "#ff7f50"; // Coral color for version > 0
+      }
+      return d.name ? "#69b3a2" : "#404040";
+    })
+    .attr("stroke", "black")
+    .style("stroke-width", 2)
+    .on("click", showNodeDetails)
+    .call(d3.drag()
+      .on("start", dragstarted)
+      .on("drag", dragged)
+      .on("end", dragended));
+
+  // Update node details function to show arrangement data
+  function showNodeDetails(event, d) {
+    event.stopPropagation();
+    
+    nodes.selectAll(".node-details")
+      .style("display", "none");
+    
+    const detailsText = d3.select(event.target.parentNode)
+      .select(".node-details")
+      .style("display", "block");
+    
+    if (d.data.data) { // If node has arrangement data
+      const arrangement = d.data.data;
+      detailsText.text(`Name: ${d.data.name}
+                       Position: (${arrangement.position?.x || 0}, ${arrangement.position?.y || 0}, ${arrangement.position?.z || 0})
+                       Volume: ${((arrangement.max_x - arrangement.min_x) * 
+                                (arrangement.max_y - arrangement.min_y) * 
+                                (arrangement.max_z - arrangement.min_z)).toFixed(2)} m³`);
+    } else {
+      detailsText.text(`Name: ${d.data.name}
+                       Type: ${d.children ? 'Category' : 'Component'}
+                       No. of Versions: ${d.children?.length || 0}`);
+    }
+
+    
+    handleVersionChange(d.data.name);
+  }
+
+  // Keep existing drag functions
+  function dragstarted(event, d) {
+    event.sourceEvent.stopPropagation();
+    d3.select(this).raise().classed("active", true);
+  }
+
+  function dragged(event, d) {
+    d.x = event.y;
+    d.y = event.x;
+    
+    const node = d3.select(this.parentNode);
+    node.attr("transform", `translate(${d.y},${d.x})`);
+    
+    // Update connected paths
+    svg.selectAll('path')
+      .attr("d", function(p) {
+        if (p.parent === d) {
+          return "M" + p.y + "," + p.x
+            + "C" + (d.y + 50) + "," + p.x
+            + " " + (d.y + 150) + "," + d.x
+            + " " + d.y + "," + d.x;
+        } else if (p === d && p.parent) {
+          return "M" + d.y + "," + d.x
+            + "C" + (p.parent.y + 50) + "," + d.x
+            + " " + (p.parent.y + 150) + "," + p.parent.x
+            + " " + p.parent.y + "," + p.parent.x;
+        }
+        return this.getAttribute("d");
+      });
+  }
+
+  function dragended(event, d) {
+    d3.select(this).classed("active", false);
+  }
+
+  // Add labels
+  nodes.append("text")
+    .attr("dx", "-1.2em")
+    .attr("dy", "1.5em")
+    .text(d => d.data.name)
+    .style("font-size", "12px")
+    .style("font-family", "Arial");
+
+  // Add detail text containers
+  nodes.append("text")
+    .attr("class", "node-details")
+    .attr("dx", "-1.2em")
+    .attr("dy", "3em")
+    .style("font-size", "10px")
+    .style("font-family", "Arial")
+    .style("fill", "#666")
+    .style("display", "none");
+}
 
 function input3DModels() {
   const loader = new STLLoader();
@@ -741,7 +939,7 @@ function updateInfoPanel(blockData, panel) {
 }
 
 
-// Add this after your import/export buttons
+// Add this after import/export buttons
 function createVersionSliders(revisionData) {
   
     const slidersContainer = document.createElement('div');
@@ -798,13 +996,13 @@ function createVersionSliders(revisionData) {
 
     document.getElementById("menus").appendChild(slidersContainer);
 
-    
 }
 
-function handleVersionChange(fileName, version) {
+function handleVersionChange(fileName) {
     // Create the path to the version file
-    const filePath = `./data/versions/${fileName.replace(' ', '_')}_r${version}.json`;
-    
+    //const filePath = `./data/versions/${fileName.replace(' ', '_')}_r${version}.json`;
+    const filePath = `./data/versions/${fileName}.json`;
+    console.log(fileName)
     // Fetch the new version data
     fetch(filePath)
         .then(response => response.json())
@@ -842,8 +1040,8 @@ function handleVersionChange(fileName, version) {
             [startPoints, endPoints, diaLists] = FindSeries(connections, arrangements, diaLists, scene);
         })
         .catch(error => {
-            console.error(`Error loading version ${version} of ${fileName}:`, error);
-            alert(`Failed to load version ${version} of ${fileName}`);
+            console.error(`Error loading version of ${fileName}:`, error);
+            alert(`Failed to load version of ${fileName}`);
         });
 }
 

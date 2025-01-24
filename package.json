@@ -1,8 +1,9 @@
 {
-    "name":"import-fix",
-    "main":"index.js",
+    "name": "import-fix",
+    "main": "index.js",
     "dependencies": {
+        "gojs": "^3.0.18",
         "lodash": "^4.17.15"
     },
-    "type":"module"
+    "type": "module"
 }
