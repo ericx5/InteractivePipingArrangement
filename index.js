@@ -47,7 +47,7 @@ var playButton2 = document.createElement("button");
 playButton2.innerHTML = "▷ Calculation";
 playButton2.style.color = "black";
 playButton2.style.fontSize = "15px";
-document.getElementById("figure").appendChild(playButton2);
+document.getElementById("menus").appendChild(playButton2);
 playButton2.onclick = calculationButtonClicked;
 
 //put renderer to "figure" div
@@ -68,6 +68,7 @@ input3DModels();
 
 function createGraphView()
 {
+  
   // set the dimensions and margins of the graph
   const width = 800;
   const height = 800;
@@ -80,13 +81,30 @@ function createGraphView()
     .append("g")
     .attr("transform", "translate(40,0)");
 
+    
   // Create hierarchical data structure from Gunnerus data
-  function createHierarchy() {
+  function createTreeNodes() {
+    
     const root = {
       name: "Gunnerus",
       children: []
     };
 
+    const root2 = {
+      name: "Compartment",
+      children: []
+    };
+
+    const root3 = {
+      name: "Revisions",
+      children: []
+    };
+    const root4 = {
+      name: "1463114",
+      version: 1463114,
+      children: []
+    };
+    
     // Create main categories based on arrangement types
     const categories = new Set();
     Object.keys(arrangements).forEach(key => {
@@ -94,6 +112,9 @@ function createGraphView()
       categories.add(category);
     });
 
+    root.children.push(root3)
+    root3.children.push(root4)
+    root.children.push(root2)
     // Create hierarchy structure
     categories.forEach(category => {
 
@@ -129,7 +150,7 @@ function createGraphView()
           }
         }
 
-        root.children.push(arrangementNode);
+        root2.children.push(arrangementNode);
       });
     });
 
@@ -140,7 +161,7 @@ function createGraphView()
   const cluster = d3.tree().size([height, width - 100]);
 
 
-  const root = d3.hierarchy(createHierarchy(), d => d.children);
+  const root = d3.hierarchy(createTreeNodes(), d => d.children);
   cluster(root);
 
   // Add links between nodes
@@ -154,7 +175,8 @@ function createGraphView()
         + " " + d.parent.y + "," + d.parent.x;
     })
     .style("fill", 'none')
-    .attr("stroke", '#ccc');
+    .attr("stroke", '#000')  // Red color for custom connections
+    .attr("stroke-width", 1.5)
 
   // Create node groups
   const nodes = svg.selectAll("g")
@@ -162,9 +184,12 @@ function createGraphView()
     .join("g")
     .attr("transform", d => `translate(${d.y},${d.x})`);
 
-  // Add circles to nodes
-  nodes.append("circle")
-    .attr("r", 7)
+  // Add rects to nodes (change to squares)
+  nodes.append("rect")
+    .attr("width", 40)  // Width of square
+    .attr("height", 14) // Height of square
+    .attr("x", -7)      // Center the square horizontally
+    .attr("y", -7)      // Center the square vertically
     .style("fill", d => {
       // Change color if version is greater than 0
       if (d.data.version && d.data.version > 0) {
@@ -177,8 +202,14 @@ function createGraphView()
     .on("click", showNodeDetails)
     .call(d3.drag()
       .on("start", dragstarted)
-      .on("drag", dragged)
+      .on("drag", dragged) 
       .on("end", dragended));
+
+      
+  
+  //connectNodesByName("1463114", "CargoHold_r1")
+  //connectNodesByName("1463114", "ControlRoom_r1")
+  connectNodesByName("1463114", "Accomodation1_r1")
 
   // Update node details function to show arrangement data
   function showNodeDetails(event, d) {
@@ -260,6 +291,202 @@ function createGraphView()
     .style("font-family", "Arial")
     .style("fill", "#666")
     .style("display", "none");
+
+
+  // Add this new function inside createGraphView
+  function connectNodesByName(sourceName, targetName) {
+    const nodes = root.descendants();
+    const sourceNode = nodes.find(n => n.data.name === sourceName);
+    const targetNode = nodes.find(n => n.data.name === targetName);
+    
+    if (!sourceNode || !targetNode) {
+      console.error('One or both nodes not found:', sourceName, targetName);
+      return;
+    }
+
+    // Add new path connecting the nodes
+    svg.append('path')
+      .attr("d", function() {
+        return "M" + sourceNode.y + "," + sourceNode.x
+          + "C" + (sourceNode.y + 50) + "," + sourceNode.x
+          + " " + (targetNode.y - 50) + "," + targetNode.x
+          + " " + targetNode.y + "," + targetNode.x;
+      })
+      .style("fill", 'none')
+      .attr("stroke", '#000')  // Red color for custom connections
+      .attr("stroke-width", 1.5)
+      
+  }
+
+  // Make the function accessible outside createGraphView
+  window.connectGraphNodes = function(sourceName, targetName) {
+    connectNodesByName(sourceName, targetName);
+  };
+
+  // Add this new function inside createGraphView
+  function addNewNode(nodeName, parentName, nodeData = {}) {
+    // Find the parent node in the hierarchy
+    const parentNode = root.descendants().find(n => n.data.name === parentName);
+    
+    if (!parentNode) {
+      console.error('Parent node not found:', parentName);
+      return;
+    }
+
+    // Create new node data
+    const newNodeData = {
+      name: nodeName,
+      data: nodeData,
+      children: []
+    };
+
+    // Add new node to parent's children
+    if (!parentNode.data.children) {
+      parentNode.data.children = [];
+    }
+    parentNode.data.children.push(newNodeData);
+
+    // Recompute the layout
+    cluster(root);
+
+    // Remove existing visualization
+    svg.selectAll('path').remove();
+    svg.selectAll('g').remove();
+
+    // Redraw links
+    svg.selectAll('path')
+      .data(root.descendants().slice(1))
+      .join('path')
+      .attr("d", function(d) {
+        return "M" + d.y + "," + d.x
+          + "C" + (d.parent.y + 50) + "," + d.x
+          + " " + (d.parent.y + 150) + "," + d.parent.x
+          + " " + d.parent.y + "," + d.parent.x;
+      })
+      .style("fill", 'none')
+      .attr("stroke", '#000')
+      .attr("stroke-width", 1.5);
+
+    // Redraw nodes
+    const nodes = svg.selectAll("g")
+      .data(root.descendants())
+      .join("g")
+      .attr("transform", d => `translate(${d.y},${d.x})`);
+
+    // Redraw rectangles
+    nodes.append("rect")
+      .attr("width", 40)
+      .attr("height", 14)
+      .attr("x", -7)
+      .attr("y", -7)
+      .style("fill", d => {
+        if (d.data.version && d.data.version > 0) {
+          return "#ff7f50";
+        }
+        return d.name ? "#69b3a2" : "#404040";
+      })
+      .attr("stroke", "black")
+      .style("stroke-width", 2)
+      .on("click", showNodeDetails)
+      .call(d3.drag()
+        .on("start", dragstarted)
+        .on("drag", dragged)
+        .on("end", dragended));
+
+    // Redraw labels
+    nodes.append("text")
+      .attr("dx", "-1.2em")
+      .attr("dy", "1.5em")
+      .text(d => d.data.name)
+      .style("font-size", "12px")
+      .style("font-family", "Arial");
+
+    // Redraw detail containers
+    nodes.append("text")
+      .attr("class", "node-details")
+      .attr("dx", "-1.2em")
+      .attr("dy", "3em")
+      .style("font-size", "10px")
+      .style("font-family", "Arial")
+      .style("fill", "#666")
+      .style("display", "none");
+  }
+
+  // Make the function accessible outside createGraphView
+  window.addGraphNode = function(nodeName, parentName, nodeData = {}) {
+    addNewNode(nodeName, parentName, nodeData);
+  };
+
+  // Create a transparent rectangle that moves horizontally
+  const timeSlider = svg.append("rect")
+    .attr("x", 0)
+    .attr("y", 0)
+    .attr("width", 50)  // Width of the vertical line
+    .attr("height", height)  // Full height of the SVG
+    .attr("fill", "#4CAF50")  // Green color
+    .attr("opacity", 0.3)
+    .attr("cursor", "ew-resize")  // Show horizontal resize cursor
+    .call(d3.drag()
+      .on("start", timeSliderDragStarted)
+      .on("drag", timeSliderDragged)
+      .on("end", timeSliderDragEnded));
+
+  var timeValue=0;
+
+  function timeSliderDragStarted(event) {
+    d3.select(this).raise();  // Bring to front
+    timeSlider.attr("opacity", 0.5);  // Make more visible while dragging
+  }
+
+  function timeSliderDragged(event) {
+    // Constrain horizontal movement within SVG bounds
+    const newX = Math.max(0, Math.min(width - 3, event.x));
+    timeSlider.attr("x", newX);
+    
+    // Optional: Calculate and display time value based on position
+    timeValue = (newX / width * 100).toFixed(1);
+    // You could update a time display here if needed
+    
+    // Optional: Trigger any time-based updates to your 3D view
+    updateTimeBasedView(timeValue);
+  }
+
+  function timeSliderDragEnded() {
+    timeSlider.attr("opacity", 0.3);  // Restore original opacity
+  }
+
+  // Optional: Function to update 3D view based on time value
+  function updateTimeBasedView(timeValue) {
+    // Add your logic here to update the 3D view based on the time value
+    console.log(`Time value: ${timeValue}%`);
+  }
+
+  // Optional: Add time labels
+  svg.append("text")
+    .attr("x", 10)
+    .attr("y", height - 10)
+    .text(`Time: ${timeValue}%`)
+    .attr("class", "time-label");
+
+  svg.append("text")
+    .attr("x", width - 60)
+    .attr("y", height - 10)
+    .text("Time: 100%")
+    .attr("class", "time-label");
+
+  // Add these style rules to your CSS
+  const style = document.createElement('style');
+  style.textContent = `
+    .time-label {
+      font-size: 12px;
+      font-family: Arial;
+      fill: #666;
+    }
+  `;
+  document.head.appendChild(style);
+
+  // Make the timeSlider accessible to other functions if needed
+  window.timeSlider = timeSlider;
 }
 
 function input3DModels() {
