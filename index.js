@@ -218,7 +218,11 @@ function createGraphView()
     nodes.selectAll(".node-details")
       .style("display", "none");
     
-    const detailsText = d3.select(event.target.parentNode)
+      // Change color of clicked node
+    d3.select(event.target)
+    .style("fill", "#ff0000"); // Change to red when selected
+  
+    const detailsText = d3.select(event.target) //event.target.parentNodes
       .select(".node-details")
       .style("display", "block");
     
@@ -239,6 +243,29 @@ function createGraphView()
     handleVersionChange(d.data.name);
   }
 
+
+  function findTimeSeriesAndSelect(xPosition) {
+    // Get all nodes
+    const nodes = d3.selectAll("g");
+    const errorMargin = 5;
+    
+    // Clear previous selections
+    nodes.selectAll(".node-details")
+      .style("display", "none");
+    
+    // Find and highlight nodes with similar x position
+    nodes.each(function(d) {
+      if (d) {  // Check if node data exists
+        const nodeX = d.y;  // In D3 tree layout, x and y are swapped
+        if (Math.abs(nodeX - xPosition) < errorMargin) {
+          // Trigger showNodeDetails for matching nodes
+          const event = new Event('click');
+          event.stopPropagation = () => {};  // Mock stopPropagation
+          showNodeDetails(event, d);
+        }
+      }
+    });
+  }
   // Keep existing drag functions
   function dragstarted(event, d) {
     event.sourceEvent.stopPropagation();
@@ -448,7 +475,7 @@ function createGraphView()
     // You could update a time display here if needed
     
     // Optional: Trigger any time-based updates to your 3D view
-    updateTimeBasedView(timeValue);
+    updateTimeBasedView(timeValue, event.x);
   }
 
   function timeSliderDragEnded() {
@@ -456,9 +483,10 @@ function createGraphView()
   }
 
   // Optional: Function to update 3D view based on time value
-  function updateTimeBasedView(timeValue) {
+  function updateTimeBasedView(timeValue, x) {
     // Add your logic here to update the 3D view based on the time value
     console.log(`Time value: ${timeValue}%`);
+    findTimeSeriesAndSelect(x);
   }
 
   // Optional: Add time labels
