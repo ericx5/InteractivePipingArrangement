@@ -43,28 +43,43 @@ renderer.setSize( window.innerWidth/2, window.innerHeight/3 );
 renderer.setClearColor( 0xffffff, 0);
 
 
-var playButton2 = document.createElement("button");
-playButton2.innerHTML = "▷ Calculation";
-playButton2.style.color = "black";
-playButton2.style.fontSize = "15px";
-document.getElementById("menus").appendChild(playButton2);
-playButton2.onclick = calculationButtonClicked;
 
 //put renderer to "figure" div
 document.getElementById("figure").appendChild( renderer.domElement );
 
 initializeControls();
 
+var dataBaseAddress = './data/versions/'
+createDataBase(dataBaseAddress);
 createMenus();
-
 createGraphView();
-
-//revisionData = getRevisionData();
-
-// Call this after creating import/export buttons
-//createVersionSliders();
-
 input3DModels();
+
+function createDataBase(dataBaseAddress)
+{
+  var files;
+  // Get list of files in database directory
+  fetch(dataBaseAddress)
+    .then(response => response.text())
+    .then(data => {
+      // Parse directory listing HTML to get file names
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(data, 'text/html');
+      const files = Array.from(doc.querySelectorAll('a'))
+        .map(a => a.href)
+        .filter(href => href.endsWith('.json'))
+        .map(href => href.split('/').pop());
+      
+      console.log('Available data files:', files);
+    })
+    .catch(error => {
+      console.error('Error reading database directory:', error);
+      return [];
+    });
+
+
+    return files;
+}
 
 function createGraphView()
 {
@@ -580,6 +595,13 @@ function createMenus()
   document.getElementById("figure").appendChild(playButton);
   playButton.onclick = gaButtonClicked;
 
+
+  var playButton2 = document.createElement("button");
+  playButton2.innerHTML = "▷ Calculation";
+  playButton2.style.color = "black";
+  playButton2.style.fontSize = "15px";
+  document.getElementById("menus").appendChild(playButton2);
+  playButton2.onclick = calculationButtonClicked;
 
   // Add these buttons after your existing buttons
   var importButton = document.createElement("button");
@@ -1296,7 +1318,6 @@ function handleVersionChange(fileName) {
         })
         .catch(error => {
             console.error(`Error loading version of ${fileName}:`, error);
-            alert(`Failed to load version of ${fileName}`);
         });
 }
 
