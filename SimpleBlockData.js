@@ -1,20 +1,5 @@
 var JSON_Data = {
     "arrangements":{
-        "Engine Room": {
-            "length":'',
-            "width":'',
-            "height":'',
-            "x":'',
-            "y":'',
-            "z":'',
-            "min_x":4,
-            "max_x":14,
-            "min_y":-4.80,
-            "max_y":4.8,
-            "min_z":0,
-            "max_z":4.287,
-            "color":"gray",
-        },
         "Cargo Hold": {
             "length":'',
             "width":'',

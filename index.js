@@ -81,6 +81,8 @@ function createDataBase(dataBaseAddress)
     return files;
 }
 
+
+
 function createGraphView()
 {
   
@@ -115,6 +117,10 @@ function createGraphView()
       children: []
     };
     const root4 = {
+      name: "GA Versions",
+      children: []
+    };
+    const root5 = {
       name: "1463114",
       version: 1463114,
       children: []
@@ -129,6 +135,7 @@ function createGraphView()
 
     root.children.push(root3)
     root3.children.push(root4)
+    root4.children.push(root5)
     root.children.push(root2)
     // Create hierarchy structure
     categories.forEach(category => {
@@ -214,17 +221,20 @@ function createGraphView()
     })
     .attr("stroke", "black")
     .style("stroke-width", 2)
-    .on("click", showNodeDetails)
+    .on("click", showNodeDetails);
+
+    //dragging is disabled for now
+    /*
     .call(d3.drag()
       .on("start", dragstarted)
       .on("drag", dragged) 
-      .on("end", dragended));
+      .on("end", dragended));*/
 
       
   
   //connectNodesByName("1463114", "CargoHold_r1")
   //connectNodesByName("1463114", "ControlRoom_r1")
-  connectNodesByName("1463114", "Accomodation1_r1")
+  //connectNodesByName("1463114", "Accomodation1_r1")
 
   // Update node details function to show arrangement data
   function showNodeDetails(event, d) {
@@ -232,11 +242,32 @@ function createGraphView()
     
     nodes.selectAll(".node-details")
       .style("display", "none");
-    
-      // Change color of clicked node
+
+    // Change color of clicked node
     d3.select(event.target)
-    .style("fill", "#ff0000"); // Change to red when selected
-  
+      .style("fill", "#ff0000"); // Change to red when selected
+    // Check if clicked node is a child of GA Versions
+    const isGAVersionChild = d.parent && d.parent.data.name === "GA Versions";
+    
+    if (isGAVersionChild) {
+      // Get all nodes with "r1" in their name
+      nodes.selectAll("rect")
+        .each(function(node) {
+          if (node.data.name && node.data.name.includes("r1")) {
+            handleVersionChange(node.data.name);
+          }
+        });
+        
+        return;
+    }
+
+
+    // Change other blocks to coral if they meet version condition
+    d3.selectAll("rect")
+      .filter(d => d.data.version && d.data.version > 0 && event.target !== this)
+      .style("fill", "#ff7f50");
+    
+
     const detailsText = d3.select(event.target) //event.target.parentNodes
       .select(".node-details")
       .style("display", "block");
@@ -1384,7 +1415,7 @@ function exportJSON() {
 }
 
 // Export the function to make it globally accessible
-window.caseSelected = function(value) {
+window.handleCaseChange = function(value) {
     scene.clear();
     objects = [];
     startBlocks = [];
