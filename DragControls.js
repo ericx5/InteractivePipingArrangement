@@ -93,7 +93,7 @@ class DragControls extends EventDispatcher {
 
 			_raycaster.setFromCamera( _pointer, _camera );
 
-			if ( _selected ) {
+			if ( _selected && _selected.matrixWorld ) {
 
 				if ( scope.mode === 'translate' ) {
 
@@ -115,6 +115,11 @@ class DragControls extends EventDispatcher {
 
 				_previousPointer.copy( _pointer );
 
+			} else if ( _selected && !_selected.matrixWorld ) {
+				// Selected object is no longer valid, clear it
+				console.warn('Selected object lost matrixWorld during drag, clearing selection');
+				_selected = null;
+				scope.dispatchEvent( { type: 'dragend', object: null } );
 			} else {
 
 				// hover support
@@ -130,24 +135,36 @@ class DragControls extends EventDispatcher {
 
 						const object = _intersections[ 0 ].object;
 
-						_plane.setFromNormalAndCoplanarPoint( _camera.getWorldDirection( _plane.normal ), _worldPosition.setFromMatrixPosition( object.matrixWorld ) );
+						// Check if object is valid before accessing matrixWorld
+						if ( object && object.matrixWorld ) {
 
-						if ( _hovered !== object && _hovered !== null ) {
+							_plane.setFromNormalAndCoplanarPoint( _camera.getWorldDirection( _plane.normal ), _worldPosition.setFromMatrixPosition( object.matrixWorld ) );
 
-							scope.dispatchEvent( { type: 'hoveroff', object: _hovered } );
+							if ( _hovered !== object && _hovered !== null ) {
 
-							_domElement.style.cursor = 'auto';
-							_hovered = null;
+								scope.dispatchEvent( { type: 'hoveroff', object: _hovered } );
 
-						}
+								_domElement.style.cursor = 'auto';
+								_hovered = null;
 
-						if ( _hovered !== object ) {
+							}
 
-							scope.dispatchEvent( { type: 'hoveron', object: object } );
+							if ( _hovered !== object ) {
 
-							_domElement.style.cursor = 'pointer';
-							_hovered = object;
+								scope.dispatchEvent( { type: 'hoveron', object: object } );
 
+								_domElement.style.cursor = 'pointer';
+								_hovered = object;
+
+							}
+
+						} else {
+							// Object is not valid, clear hover state
+							if ( _hovered !== null ) {
+								scope.dispatchEvent( { type: 'hoveroff', object: _hovered } );
+								_domElement.style.cursor = 'auto';
+								_hovered = null;
+							}
 						}
 
 					} else {
@@ -196,28 +213,43 @@ class DragControls extends EventDispatcher {
 
 				}
 
-				_plane.setFromNormalAndCoplanarPoint( _camera.getWorldDirection( _plane.normal ), _worldPosition.setFromMatrixPosition( _selected.matrixWorld ) );
+				// Check if selected object is valid and has required properties
+				if ( _selected && _selected.matrixWorld ) {
 
-				if ( _raycaster.ray.intersectPlane( _plane, _intersection ) ) {
+					_plane.setFromNormalAndCoplanarPoint( _camera.getWorldDirection( _plane.normal ), _worldPosition.setFromMatrixPosition( _selected.matrixWorld ) );
 
-					if ( scope.mode === 'translate' ) {
+					if ( _raycaster.ray.intersectPlane( _plane, _intersection ) ) {
 
-						_inverseMatrix.copy( _selected.parent.matrixWorld ).invert();
-						_offset.copy( _intersection ).sub( _worldPosition.setFromMatrixPosition( _selected.matrixWorld ) );
+						if ( scope.mode === 'translate' ) {
 
-					} else if ( scope.mode === 'rotate' ) {
+							// Check if parent exists and has matrixWorld
+							if ( _selected.parent && _selected.parent.matrixWorld ) {
+								_inverseMatrix.copy( _selected.parent.matrixWorld ).invert();
+								_offset.copy( _intersection ).sub( _worldPosition.setFromMatrixPosition( _selected.matrixWorld ) );
+							} else {
+								console.warn('Selected object has no valid parent or parent matrixWorld');
+								_selected = null;
+								return;
+							}
 
-						// the controls only support Y+ up
-						_up.set( 0, 1, 0 ).applyQuaternion( _camera.quaternion ).normalize();
-						_right.set( 1, 0, 0 ).applyQuaternion( _camera.quaternion ).normalize();
+						} else if ( scope.mode === 'rotate' ) {
+
+							// the controls only support Y+ up
+							_up.set( 0, 1, 0 ).applyQuaternion( _camera.quaternion ).normalize();
+							_right.set( 1, 0, 0 ).applyQuaternion( _camera.quaternion ).normalize();
+
+						}
 
 					}
 
+					_domElement.style.cursor = 'move';
+
+					scope.dispatchEvent( { type: 'dragstart', object: _selected } );
+
+				} else {
+					console.warn('Selected object is null or has no matrixWorld');
+					_selected = null;
 				}
-
-				_domElement.style.cursor = 'move';
-
-				scope.dispatchEvent( { type: 'dragstart', object: _selected } );
 
 			}
 

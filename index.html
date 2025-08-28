@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <style>
     body {
@@ -22,6 +22,28 @@
         margin-left: 20px;
         margin-bottom: 0em;
     }     
+
+    #the-canvas {
+        border: 2px solid #ccc;
+        max-width: 100%;
+        height: auto;
+        display: block;
+        margin: 10px 0;
+    }
+
+    .success {
+        color: green;
+        font-weight: bold;
+    }
+
+    .error {
+        color: red;
+        font-weight: bold;
+    }
+
+    .info {
+        color: blue;
+    }
     </style>
 <script type="importmap">
         {
@@ -37,68 +59,84 @@
 
 
 </head>
-</div>
 <body id="body">
   <div id="main" style="width:1000px;border:1px solid grey; padding:20px; font-family:Helvetica, sans-serif; margin: 0 auto;">
   <h1>Simple GA Creater</h1>
-  <p class="lead" style="text-align: right;">Made by Jisang Ha & Henrique M. Gaspar ~ Feb 2025</p>
+  <p class="lead" style="text-align: right;">Made by Jisang Ha & Henrique M. Gaspar ~ Aug 2025</p>
   <p>This is an example of simple GA (General Arrangement) Creater that responds to user's drag.</p>
   <p>This app visualizes objects based on the information obtained and creates the shortest pipeline connecting the cneters of objectsof the ship. </p>
   <p> <strong> By draging, user can rearrange objects' location</strong> in real-time.</p>
   <div id ="menus">
     <div style="margin: 20px 0;">
       <label style="margin-right: 20px;">
-        <input type="radio" name="case" value="case1" onclick="handleCaseChange(this)"> Simple block
+        <input type="radio" name="case" value="case1"  checked onclick="if(typeof handleCaseChange === 'function') handleCaseChange(this); else console.log('handleCaseChange not loaded yet');"> Simple block
       </label>
       <label>
-        <input type="radio" name="case" value="case2" checked onclick="handleCaseChange(this)"> Gunnerus
+        <input type="radio" name="case" value="case2"   onclick="if(typeof handleCaseChange === 'function') handleCaseChange(this); else console.log('handleCaseChange not loaded yet');"> Gunnerus
       </label>
     </div>
   </div>
   <div id="my_dataviz"></div>
   <div id="figure" style="width:50%;">
   <br />
-</div>
-<div >
-  <canvas id="the-canvas" style="width:80%"></canvas>
-  <br/>
-  <button id="prev">Previous</button>
-  <button id="next">Next</button>
-  &nbsp; &nbsp;
-  <span>Page: <span id="page_num"></span> / <span id="page_count"></span></span>
-</div>
-  <h2>About </h2>
-  <div style="width: 100%; overflow: hidden;">
-  <div style="width: 50%; float: left;"> 
+  </div>
+  <div >
+    <form id="fileForm_mid">
+      <input type="file" id="fileInput_mid" accept=".jpg,.jpeg,.JPG,.JPEG" required>
+      <button type="submit">Get Midsection Image Dimensions</button> 
+    </form>
+    <form id="fileForm_profile">
+      <input type="file" id="fileInput_profile" accept=".jpg,.jpeg,.JPG,.JPEG" required>
+      <button type="submit">Get Profile Image Dimensions</button> 
+    </form>
+    <form id="fileForm_3d" align="center">
+      <button type="submit">Get 3D Model</button> 
+    </form>
     
-  <p><strong>App: 
-  <p></strong>
-    This app is for verifying that the arrangement and pipe routing can be performed in real-time in a web-based environment. 
-      <br><p>This example gets information about the relationship of the target objects that need to be connected and the diameter of the pipe from the Connection data, and the size and location of the target objects from the data. (from <a href="GunnerusData.js">GunnerusData.js</a> and <a href="GunnerusConnection.js">GunnerusConnection.js.)</a> </p>
-      The pipe connecting each object is determined through the A* algorithm, and currently, minimization of pipe length is used as the objective function. 
-      This app will add various pipe path generation algorithms and objective functions in the future, and aims to optimize arrangements that minimize pipe costs. The research used in this app is based on the prior study (<a href="https://doi.org/10.1016/j.ijnaoe.2023.100533">Method for pipe routing using the expert system and the heuristic pathfinding algorithm in shipbuilding (Ha et al. 2023)).</a></p>
-      This app is implementing the methods and examples proposed in the paper and plans to make it publicly available on the web.
-    </div>
-      
-  <div style="margin-left: 52%;">  
-      
-  <p><strong>Features: </strong>
-  
-  <ul><li>Currently grid size is 10cm, but it can be parametrized in the future.</li>
-    <li>Simple A* algorithm is used for pipe routing now.</li>
-    <li>We have a plan to develop a new grid-based pipe routing algorithm for web-app.</li>
-    <li>Click and drag a block to change its position and update its location used information and matches.</li>
-    <li>Connections between blocks are designed to be centroid-to-center connections. If we get information about the connection, we will update it to route the pipe to connect to the nozzle of the block or equipment. </li>
-    </ul>
-</div> 
+    <p id="fileResponseMessage"></p>
 
-<script type='module' src="./three.module.js"></script>
-<script type='module' src="./OrbitControls.js"></script>
-<script type='module' src="./DragControls.js"></script>
-<script type='module' src="./GunnerusData.js"></script>
-<script type='module' src="./GunnerusConnection.js"></script>
-<script type='module' src="./index.js"></script>
+    
+    <canvas id="the-canvas" style="width:80%"></canvas>
+    <br/>
+    <button id="prev">Previous</button>
+    <button id="next">Next</button>
+    &nbsp; &nbsp;
+    <span>Page: <span id="page_num"></span> / <span id="page_count"></span></span>
+    
 
+  </div>
+    <h2>About </h2>
+    <div style="width: 100%; overflow: hidden;">
+    <div style="width: 50%; float: left;"> 
+      
+    <p><strong>App: 
+    <p></strong>
+      This app is for verifying that the arrangement and pipe routing can be performed in real-time in a web-based environment. 
+        <br><p>This example gets information about the relationship of the target objects that need to be connected and the diameter of the pipe from the Connection data, and the size and location of the target objects from the data. (from <a href="GunnerusData.js">GunnerusData.js</a> and <a href="GunnerusConnection.js">GunnerusConnection.js.)</a> </p>
+        The pipe connecting each object is determined through the A* algorithm, and currently, minimization of pipe length is used as the objective function. 
+        This app will add various pipe path generation algorithms and objective functions in the future, and aims to optimize arrangements that minimize pipe costs. The research used in this app is based on the prior study (<a href="https://doi.org/10.1016/j.ijnaoe.2023.100533">Method for pipe routing using the expert system and the heuristic pathfinding algorithm in shipbuilding (Ha et al. 2023)).</a></p>
+        This app is implementing the methods and examples proposed in the paper and plans to make it publicly available on the web.
+      </div>
+        
+    <div style="margin-left: 52%;">  
+        
+    <p><strong>Features: </strong>
+    
+    <ul><li>Currently grid size is 10cm, but it can be parametrized in the future.</li>
+      <li>Simple A* algorithm is used for pipe routing now.</li>
+      <li>We have a plan to develop a new grid-based pipe routing algorithm for web-app.</li>
+      <li>Click and drag a block to change its position and update its location used information and matches.</li>
+      <li>Connections between blocks are designed to be centroid-to-center connections. If we get information about the connection, we will update it to route the pipe to connect to the nozzle of the block or equipment. </li>
+      </ul>
+  </div> 
+
+  <script type='module' src="./three.module.js"></script>
+  <script type='module' src="./OrbitControls.js"></script>
+  <script type='module' src="./DragControls.js"></script>
+  <script type='module' src="./data/GunnerusData.js"></script>
+  <script type='module' src="./data/GunnerusConnection.js"></script>
+  <script type='module' src="./index.js"></script>
+    
+  <script src="./python_communication.js"></script>
 </body>
-
 </html>

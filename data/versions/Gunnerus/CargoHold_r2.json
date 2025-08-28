@@ -1,0 +1,21 @@
+   {
+     "arrangements":{
+        
+        "CargoHold": {
+            "length":"",
+            "width":"",
+            "height":"",
+            "x":"",
+            "y":"",
+            "z":"",
+            "min_x":2.5,
+            "max_x":5,
+            "min_y":-3.0,
+            "max_y":3.0,
+            "min_z": 2.613,
+            "max_z": 4.287,
+            "color":"brown",
+            "timestamp": "240115"
+        }
+    }
+}
